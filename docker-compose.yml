@@ -1,20 +1,11 @@
+version: '3.11'
+
 services:
-  app:
+  weather-api:
     build: .
     ports:
       - "8000:8000"
+    volumes:
+      - ./data:/app/data
     environment:
-      - DB_PATH=/data/weather.db
-    volumes:
-      - data:/data
-    depends_on:
-      - sqlite
-
-  sqlite:
-    image: busybox
-    volumes:
-      - data:/data
-    command: mkdir -p /data && touch /data/weather.db
-
-volumes:
-  data:
+      - DB_PATH=/app/data/weather.db
