@@ -1,22 +1,107 @@
-# Weather Data Ingestor
+Weather Ingestor API
+API simples para buscar dados horários de temperatura da Open-Meteo API , armazenar em SQLite e expor endpoints com previsão média por cidade.
 
-Uma aplicação FastAPI que busca dados climáticos da API pública Open-Meteo e armazena em SQLite.
+✨ Funcionalidades
+Ingestão de dados climáticos horários
+Armazenamento em SQLite
+Filtragem por cidade e data
+Endpoint /sync-weather : Busca e salva dados de temperatura
+Endpoint /week : Retorna a média diurna (6h–18h) para os próximos 7 dias
+Endpoint /locations : Lista todas as cidades sincronizadas
+Suporte a múltiplas localizações (ex: Berlim, São Paulo, Londres...)
+uvicorn app.main:app --reload
 
-## Endpoints
+Como Rodar
+Pré-requisitos:
+Docker
+Docker Compose
+Passo a passo:
 
-- `POST /sync-weather` → Busca e salva dados horários de temperatura em Berlim
-- `GET /week` → Retorna média diária da semana (horário diurno: 6h–18h)
-- `GET /weather` → Lista últimos N registros
+# Clonar repositório
+git clone https://github.com/seu-usuario/weather-ingestor.git 
+cd weather-ingestor
 
-## Como Rodar
-
+# Subir serviço
 docker-compose up --build
 
-### Localmente (sem Docker):
+Acesse a documentação automática:
+http://localhost:8000/docs
 
-uvicorn app.main:app --reload
+Endpoints
+POST /sync-weather
+Busca dados da Open-Meteo e salva no banco local.
 
-```bash
-pip install -r requirements.txt
+Parâmetros:
+latitude: Latitude da cidade (padrão: 52.52)
+longitude: Longitude da cidade (padrão: 13.41)
 
-uvicorn app.main:app --reload
+Exemplo:
+curl -X POST "http://localhost:8000/sync-weather?latitude=-23.55&longitude=-46.63"
+
+Resposta:
+{
+  "rows_upserted": 24,
+  "city": "Sao Paulo"
+}
+
+GET /week
+Retorna a média da temperatura durante o dia (6h–18h) para cada dia da próxima semana.
+
+Parâmetros:
+latitude: Latitude da cidade (padrão: 52.52)
+longitude: Longitude da cidade (padrão: 13.41)
+
+Exemplo:
+curl "http://localhost:8000/week?latitude=-23.55&longitude=-46.63"
+
+Resposta:
+
+{
+  "Sao Paulo": {
+    "2025-04-07": 14.5,
+    "2025-04-08": 13.9
+  }
+}
+
+GET /locations
+Lista todas as cidades cujos dados já foram sincronizados.
+
+Exemplo:
+curl "http://localhost:8000/locations"
+
+Resposta:
+{
+  "locations": ["Berlin", "Sao Paulo", "London"]
+}
+
+GET /weather
+Lista as últimas N temperaturas armazenadas.
+
+Parâmetro opcional:
+limit: Quantidade de registros (padrão: 10)
+
+Exemplo:
+curl "http://localhost:8000/weather?limit=5"
+
+Resposta:
+
+[
+  {"timestamp": "2025-04-07T14:00", "temperature": 14.5, "city": "Berlin"},
+  ...
+]
+
+Estrutura do Projeto
+
+.
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+├── pyproject.toml
+└── app/
+    ├── main.py
+    ├── models.py
+    ├── database.py
+    ├── schema.py
+    └── config.py
+
+
