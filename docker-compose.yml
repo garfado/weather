@@ -1,0 +1,20 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_PATH=/data/weather.db
+    volumes:
+      - data:/data
+    depends_on:
+      - sqlite
+
+  sqlite:
+    image: busybox
+    volumes:
+      - data:/data
+    command: mkdir -p /data && touch /data/weather.db
+
+volumes:
+  data:
